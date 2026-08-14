@@ -8,6 +8,9 @@ from drivers.asserts import assert_substring
 import time
 import os
 
+if "GITHUB_TOKEN" in os.environ:
+    os.environ.setdefault("GH_TOKEN", os.environ["GITHUB_TOKEN"])
+
 v_init = drivers.alr.run_alr("version").out
 
 shutil.copy(os.environ["ALR_PATH"], ".")

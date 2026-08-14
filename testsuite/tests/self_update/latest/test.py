@@ -6,6 +6,9 @@ from drivers.alr import run_alr, CalledProcessError
 from drivers.helpers import exe_name, MockCommand
 import os
 
+if "GITHUB_TOKEN" in os.environ:
+    os.environ.setdefault("GH_TOKEN", os.environ["GITHUB_TOKEN"])
+
 v_init = run_alr("version").out
 
 curl_script = """
