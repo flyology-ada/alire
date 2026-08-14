@@ -32,6 +32,8 @@ def run_alr(args: list[str], expect_success: bool = True) -> str:
     p = run([local_alr, "-n", *args], capture_output=True)
     output = f"""stdout: {p.stdout.decode(errors="replace")}
 stderr: {p.stderr.decode(errors="replace")}"""
+    # Shared CI runner IPs can exhaust the live API's anonymous quota. Skip
+    # only its explicit rate-limit diagnostic so other failures stay visible.
     if "GitHub API rate limit exceeded" in output:
         print("SKIP: GitHub API rate limit exceeded")
         sys.exit()

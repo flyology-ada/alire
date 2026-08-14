@@ -32,6 +32,8 @@ with MockCommand("curl", curl_script, "curl_override"):
     out = p.stdout + p.stderr
     if p.returncode == 0:
         assert os.path.exists(exe_name("alr"))
+    # Shared CI runner IPs can exhaust the live API's anonymous quota. Skip
+    # only its explicit rate-limit diagnostic so other failures stay visible.
     elif "GitHub API rate limit exceeded" in out:
         print("SKIP: GitHub API rate limit exceeded")
         sys.exit()
