@@ -149,11 +149,13 @@ package body Alire.Builds.Hashes is
 
          procedure Add_Features is
          begin
-            Add ("features", Rel.Name_Str,
-                 Selection.Requested.To_Vector.Flatten (","));
-            Add ("default-features", Rel.Name_Str,
-                 AAA.Strings.To_Lower_Case
-                   (Selection.Default_Features'Image));
+            if not Rel.Features.Is_Empty then
+               Add ("features", Rel.Name_Str,
+                    Selection.Requested.To_Vector.Flatten (","));
+               Add ("default-features", Rel.Name_Str,
+                    AAA.Strings.To_Lower_Case
+                      (Selection.Default_Features'Image));
+            end if;
          end Add_Features;
 
          -------------------
