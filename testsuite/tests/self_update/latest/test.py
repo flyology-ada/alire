@@ -2,12 +2,10 @@
 Perform a `self-update` to latest (do NOT replace the current binary)
 """
 
-from drivers.alr import run_alr, CalledProcessError
-from drivers.helpers import exe_name, MockCommand
+from drivers.alr import run_alr
+from drivers.helpers import exe_name, MockCommand, run
 import os
-
-if "GITHUB_TOKEN" in os.environ:
-    os.environ.setdefault("GH_TOKEN", os.environ["GITHUB_TOKEN"])
+import sys
 
 v_init = run_alr("version").out
 
@@ -25,10 +23,19 @@ subprocess.call(["curl", *token_header, *sys.argv[1:]], env=env2)
 """
 
 with MockCommand("curl", curl_script, "curl_override"):
-    try:
-        out = run_alr("self-update", "--location=.").out
-        assert os.path.exists(exe_name("alr")) 
-    except CalledProcessError:
+    p = run(
+        [os.environ["ALR_PATH"], "-q", "-d", "-n", "self-update",
+         "--location=."],
+        capture_output=True,
+        text=True,
+    )
+    out = p.stdout + p.stderr
+    if p.returncode == 0:
+        assert os.path.exists(exe_name("alr"))
+    elif "GitHub API rate limit exceeded" in out:
+        print("SKIP: GitHub API rate limit exceeded")
+        sys.exit()
+    else:
         assert "could not find artifact" in out
 
 assert run_alr("version").out == v_init  # ensure the main alr is unchanged

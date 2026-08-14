@@ -7,9 +7,7 @@ from drivers.helpers import exe_name, MockCommand, run, shutil
 from drivers.asserts import assert_substring
 import time
 import os
-
-if "GITHUB_TOKEN" in os.environ:
-    os.environ.setdefault("GH_TOKEN", os.environ["GITHUB_TOKEN"])
+import sys
 
 v_init = drivers.alr.run_alr("version").out
 
@@ -32,10 +30,14 @@ subprocess.call(["curl", *token_header, *sys.argv[1:]], env=env2)
 
 def run_alr(args: list[str], expect_success: bool = True) -> str:
     p = run([local_alr, "-n", *args], capture_output=True)
+    output = f"""stdout: {p.stdout.decode(errors="replace")}
+stderr: {p.stderr.decode(errors="replace")}"""
+    if "GitHub API rate limit exceeded" in output:
+        print("SKIP: GitHub API rate limit exceeded")
+        sys.exit()
     assert expect_success == (
         p.returncode == 0
-    ), f"""stdout: {p.stdout.decode(errors="replace")}
-stderr: {p.stderr.decode(errors="replace")}"""
+    ), output
     return p.stdout.decode(errors="replace")
 
 
