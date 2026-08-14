@@ -30,13 +30,18 @@ package body Alire.Dependencies.States is
 
    overriding function "=" (L, R : State) return Boolean
    is
+      use type AAA.Strings.Set;
    begin
       --  Explicit because the implicit one is reporting spurious diffs (bug?)
       return
          L.Fulfilled = R.Fulfilled
          and then L.Transitivity = R.Transitivity
          and then L.Pinning = R.Pinning
-         and then Dependency (L) = Dependency (R);
+         and then L.Crate = R.Crate
+         and then L.Versions = R.Versions
+         and then L.Is_Optional = R.Is_Optional
+         and then L.Requested_Features = R.Requested_Features
+         and then L.Uses_Default_Features = R.Uses_Default_Features;
    end "=";
 
    ----------------------
