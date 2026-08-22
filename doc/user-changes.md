@@ -6,6 +6,12 @@ stay on top of `alr` new features.
 
 ## Release `3.0`
 
+### Reliable clean with shared dependencies
+
+`alr clean` no longer creates spurious shared build directories or fails with
+conflicting environment variables when a dependency exports `Set` values that
+contain `${CRATE_ROOT}`.
+
 ### Updated SPDX license expression support
 
 PR [#2096](https://github.com/alire-project/alire/pull/2096)
@@ -1279,4 +1285,3 @@ See the [GPR config](https://docs.adacore.com/gprbuild-docs/pdf/gprbuild_ug.pdf)
 definition in 2.9.1 and
 [Ada2022](https://www.adaic.org/resources/add_content/standards/22rm/html/RM-2-9.html)
 definition.
-
