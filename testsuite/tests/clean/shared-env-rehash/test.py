@@ -29,9 +29,12 @@ build_dir = builds.find_dir("envdep")
 assert_file_exists(os.path.join(build_dir, "alire", "flags", "complete_copy"))
 assert_file_exists(os.path.join(build_dir, "pre_build_ran"), wanted=False)
 hash_input = builds.hash_input("envdep")
-assert "environment:ENVDEP_INCLUDE=envdep_1.0.0_filesystem/include" in hash_input
-assert "environment:ENVDEP_SHARE=envdep_1.0.0_filesystem/share" in hash_input
-assert build_dir not in hash_input
+base_folder = "envdep_1.0.0_filesystem"
+expected_include = os.path.join(base_folder, "include")
+expected_share = os.path.join(base_folder, "share")
+assert f"environment:ENVDEP_INCLUDE={expected_include}" in hash_input
+assert f"environment:ENVDEP_SHARE={expected_share}" in hash_input
+assert build_dir.replace("/", os.sep) not in hash_input
 
 # A fresh `alr clean` process must retain the same normalized build hash. In
 # particular, its own exported ENVDEP_* values must not become hash inputs.
