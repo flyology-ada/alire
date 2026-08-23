@@ -6,12 +6,6 @@ stay on top of `alr` new features.
 
 ## Release `3.0`
 
-### Reliable clean with shared dependencies
-
-`alr clean` no longer creates spurious shared build directories or fails with
-conflicting environment variables when a dependency exports `Set` values that
-contain `${CRATE_ROOT}`.
-
 ### Updated SPDX license expression support
 
 PR [#2096](https://github.com/alire-project/alire/pull/2096)
