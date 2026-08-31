@@ -4,6 +4,7 @@ with Ada.Strings.Maps;
 with Ada.Text_IO;
 
 with Alire.Dependencies;
+with Alire.Gated_Delivery;
 with Alire.Optional;
 with Alire.Platforms.Current;
 with Alire.Releases;
@@ -306,6 +307,12 @@ package body Alr.Commands.Withing is
       end Check;
 
    begin
+      if Cmd.Features.all /= "" or else Cmd.No_Default_Features then
+         Alire.Gated_Delivery.Require
+           (Alire.Gated_Delivery.Package_Features,
+            "dependency feature selection");
+      end if;
+
       Requested_Features := Feature_Selection (Cmd);
 
       Cmd.Requires_Workspace;
@@ -529,13 +536,14 @@ package body Alr.Commands.Withing is
          Output      => Cmd.Features'Access,
          Long_Switch => "--features=",
          Argument    => "LIST",
-         Help        => "Features to request on added dependencies");
+         Help        => "Experimental dependency features "
+           & "(disabled by default)");
 
       Define_Switch
         (Config,
          Cmd.No_Default_Features'Access,
          "", "--no-default-features",
-         "Disable default features on added dependencies");
+         "Experimental: disable default features (disabled by default)");
    end Setup_Switches;
 
 end Alr.Commands.Withing;

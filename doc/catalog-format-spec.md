@@ -277,7 +277,13 @@ static, i.e. they cannot depend on the context.
 
 Index format 1.5 adds Cargo-style additive crate features. Features may activate
 dependency edges marked as optional and forward features to dependencies. A
-dependency is declared with an inline table when it needs feature-related
+temporary delivery gate keeps local use and dependency resolution disabled
+unless the `ALIRE_GATE_FEATURES` environment variable is present. The
+variable's value is ignored, so `ALIRE_GATE_FEATURES= alr build` enables it.
+Alire can still inspect a 1.5 index while the gate is disabled; it warns once
+and excludes feature-bearing releases from dependency solving.
+
+A dependency is declared with an inline table when it needs feature-related
 settings instead of only a version string:
 
 ```toml

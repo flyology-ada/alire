@@ -14,6 +14,7 @@ with Alire.Errors;
 with Alire.Crate_Features;
 with Alire.Features;
 with Alire.Formatting;
+with Alire.Gated_Delivery;
 with Alire.Index_On_Disk.Loading;
 with Alire.Index_On_Disk.Updates;
 with Alire.Lockfiles;
@@ -749,7 +750,8 @@ package body Alr.Commands is
          Sub_Cmd.Execute;
          Log ("alr " & Sub_Cmd.What_Command & " done", Detail);
       exception
-         when E : Alire.Checked_Error =>
+         when E : Alire.Checked_Error
+                | Alire.Gated_Delivery.Feature_Disabled =>
             Alire.Errors.Pretty_Print (Alire.Errors.Get (E, Clear => False));
             if Alire.Log_Level = Debug then
                raise;

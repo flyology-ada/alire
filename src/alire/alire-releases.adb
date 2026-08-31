@@ -9,6 +9,7 @@ with Alire.Errors;
 with Alire.Features;
 with Alire.Flags;
 with Alire.Formatting;
+with Alire.Gated_Delivery;
 with Alire.Loading;
 with Alire.Origins.Deployers.System;
 with Alire.Paths;
@@ -38,6 +39,11 @@ package body Alire.Releases is
 
    function Features (R : Release) return Crate_Features.Definitions
    is (R.Features);
+
+   function Uses_Package_Features (R : Release) return Boolean
+   is (not R.Features.Is_Empty
+       or else
+         (for some Dep of R.Flat_Dependencies => Dep.Uses_Feature_Syntax));
 
    function Active_Features
      (R                : Release;
@@ -1323,12 +1329,7 @@ package body Alire.Releases is
          Avail   => This.Available);
 
       if Source = Manifest.Index
-        and then
-          (Has_Feature_Table
-           or else not This.Features.Is_Empty
-           or else
-             (for some Dep of This.Flat_Dependencies =>
-                Dep.Uses_Feature_Syntax))
+        and then (Has_Feature_Table or else This.Uses_Package_Features)
         and then From.Metadata.Kind = Alire.Loading.Index
         and then From.Metadata.Version < Alire.Features.Index.Package_Features
       then
@@ -1336,6 +1337,14 @@ package body Alire.Releases is
            ("crate features require index version "
             & Alire.Features.Index.Package_Features.Image
             & " or newer");
+      end if;
+
+      if Source = Manifest.Local
+        and then (Has_Feature_Table or else This.Uses_Package_Features)
+      then
+         Alire.Gated_Delivery.Require
+           (Alire.Gated_Delivery.Package_Features,
+            "manifest package feature syntax");
       end if;
 
       --  Consolidate/validate some properties as fields:

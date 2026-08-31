@@ -159,6 +159,9 @@ package Alire.Releases is
 
    function Features (R : Release) return Crate_Features.Definitions;
 
+   function Uses_Package_Features (R : Release) return Boolean;
+   --  Whether R declares features or uses feature-aware dependency syntax.
+
    function Active_Features
      (R                : Release;
       Requested        : AAA.Strings.Set;

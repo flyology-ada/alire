@@ -18,7 +18,9 @@ may change.
 - manifest: new `mirror` property (array of alternative origins).
 - manifest: additive crate features require index version 1.5.0, including
   optional feature-gated dependency edges. Feature-free manifests remain
-  compatible with older clients.
+  compatible with older clients. This experimental support is disabled unless
+  `ALIRE_GATE_FEATURES` is set. Ungated clients can inspect a 1.5 index but
+  ignore feature-bearing releases during dependency solving.
 
 ### We are here
 

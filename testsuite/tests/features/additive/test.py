@@ -7,6 +7,10 @@ from drivers.asserts import assert_in_file, assert_not_substring, assert_substri
 from drivers.helpers import content_of
 
 
+# Additive package features are intentionally behind a temporary delivery gate.
+os.environ["ALIRE_GATE_FEATURES"] = ""
+
+
 def append_manifest(crate, text):
     with open(os.path.join(crate, "alire.toml"), "a") as manifest:
         manifest.write(text)

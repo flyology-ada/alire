@@ -2,6 +2,7 @@ with Ada.Directories;
 with Ada.Text_IO;
 
 with Alire.Directories;
+with Alire.Gated_Delivery;
 with Alire.Paths;
 with Alire.TOML_Load;
 
@@ -50,6 +51,9 @@ package body Alire.Lockfiles is
               Keys.Solution));
 
       if From.Contains (Keys.Root_Features) then
+         Alire.Gated_Delivery.Require
+           (Alire.Gated_Delivery.Package_Features,
+            "lockfile root feature selection");
          This.Root_Features := Crate_Features.Selection_From_TOML
            (From.Descend
               (From.Checked_Pop (Keys.Root_Features, TOML.TOML_Table),
@@ -129,6 +133,8 @@ package body Alire.Lockfiles is
       end;
 
    exception
+      when Gated_Delivery.Feature_Disabled =>
+         raise;
       when E : others =>
          Trace.Debug ("Exception while loading lockfile is: ");
          Log_Exception (E, Debug);

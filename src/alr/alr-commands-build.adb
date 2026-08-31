@@ -2,6 +2,7 @@ with AAA.Enum_Tools;
 
 with Alire.Crate_Configuration;
 with Alire.Crate_Features;
+with Alire.Gated_Delivery;
 with Alire.Lockfiles;
 with Alire.TOML_Adapters;
 with Alire.Utils.Switches;
@@ -70,6 +71,9 @@ package body Alr.Commands.Build is
       Stop_After : Alire.Builds.Stop_Points := Alire.Builds.Stop_Points'Last;
    begin
       if Cmd.Features.all /= "" or else Cmd.No_Default_Features then
+         Alire.Gated_Delivery.Require
+           (Alire.Gated_Delivery.Package_Features,
+            "build feature selection");
          declare
             Requested : AAA.Strings.Set;
          begin
@@ -330,14 +334,14 @@ package body Alr.Commands.Build is
         (Config,
          Cmd.Features'Access,
          "", Switch_Features & "=",
-         "Comma-separated root crate features to enable",
+         "Experimental root crate features (disabled by default)",
          Argument => "LIST");
 
       Define_Switch
         (Config,
          Cmd.No_Default_Features'Access,
          "", Switch_No_Default_Features,
-         "Do not enable the root crate's default feature");
+         "Experimental: disable default features (disabled by default)");
 
    end Setup_Switches;
 

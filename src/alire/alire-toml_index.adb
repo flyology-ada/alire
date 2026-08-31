@@ -4,6 +4,8 @@ with Ada.Directories;
 with Alire.Settings.Builtins;
 with Alire.Crates;
 with Alire.Directories;
+with Alire.Features;
+with Alire.Gated_Delivery;
 with Alire.Loading;
 with Alire.TOML_Adapters;
 
@@ -205,6 +207,12 @@ package body Alire.TOML_Index is
                          Disable_Setting =>
                            Settings.Builtins.Warning_Old_Index.Key);
             Suggest_Update := True;
+         elsif Loading_Index_Version = Alire.Features.Index.Package_Features
+         then
+            Alire.Gated_Delivery.Warn_If_Disabled
+              (Alire.Gated_Delivery.Package_Features,
+               "Index 1.5 package features are disabled and feature-bearing"
+               & " releases will be ignored during dependency solving");
          elsif not Alire.Index.Valid_Versions.Contains (Loading_Index_Version)
          then
 

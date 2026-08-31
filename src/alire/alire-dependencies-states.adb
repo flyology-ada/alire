@@ -1,3 +1,4 @@
+with Alire.Gated_Delivery;
 with Alire.Manifest;
 with Alire.Milestones;
 with Alire.Origins;
@@ -110,6 +111,21 @@ package body Alire.Dependencies.States is
 
    function From_TOML (From : TOML_Adapters.Key_Queue) return State
    is
+      function Check_Feature_Gate return Boolean is
+      begin
+         if From.Contains (Keys.Optional)
+           or else From.Contains (Keys.Default_Features)
+           or else From.Contains (Keys.Features)
+         then
+            Alire.Gated_Delivery.Require
+              (Alire.Gated_Delivery.Package_Features,
+               "lockfile dependency feature state");
+         end if;
+         return True;
+      end Check_Feature_Gate;
+
+      Gate_Checked : constant Boolean := Check_Feature_Gate
+        with Unreferenced;
       Crate : constant Crate_Name :=
                 +From.Checked_Pop (Keys.Crate, TOML_String).As_String;
       Versions : constant Semantic_Versioning.Extended.Version_Set :=
@@ -178,6 +194,14 @@ package body Alire.Dependencies.States is
                        Manifest.Index,
                        Strict => False)); -- because it may come from elsewhere
          end case;
+
+         if Data.Fulfillment = Solved
+           and then Data.Release.Element.Uses_Package_Features
+         then
+            Alire.Gated_Delivery.Require
+              (Alire.Gated_Delivery.Package_Features,
+               "lockfile release package features");
+         end if;
 
          return Data;
       end Load_Fulfilment;
