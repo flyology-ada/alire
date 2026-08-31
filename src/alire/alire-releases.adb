@@ -9,6 +9,7 @@ with Alire.Errors;
 with Alire.Features;
 with Alire.Flags;
 with Alire.Formatting;
+with Alire.Loading;
 with Alire.Origins.Deployers.System;
 with Alire.Paths;
 with Alire.Properties.Bool;
@@ -28,6 +29,8 @@ with TOML.File_IO;
 with Ada.Strings.Fixed;
 
 package body Alire.Releases is
+
+   use type Alire.Loading.Kinds;
 
    package Forwarded_Feature_Maps is new
      Ada.Containers.Indefinite_Ordered_Maps
@@ -1280,6 +1283,11 @@ package body Alire.Releases is
       package Dirs    renames Ada.Directories;
       package Labeled renames Alire.Properties.Labeled;
       use type Manifest.Sources;
+
+      Has_Feature_Table : constant Boolean :=
+        From.Unwrap.Has (TOML_Keys.Features);
+      --  Preserve the syntax boundary even when an explicitly present
+      --  [features] table contains no definitions.
    begin
       Trace.Debug ("Loading release " & This.Milestone.Image);
 
@@ -1316,10 +1324,12 @@ package body Alire.Releases is
 
       if Source = Manifest.Index
         and then
-          (not This.Features.Is_Empty
+          (Has_Feature_Table
+           or else not This.Features.Is_Empty
            or else
              (for some Dep of This.Flat_Dependencies =>
                 Dep.Uses_Feature_Syntax))
+        and then From.Metadata.Kind = Alire.Loading.Index
         and then From.Metadata.Version < Alire.Features.Index.Package_Features
       then
          Raise_Checked_Error

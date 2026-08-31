@@ -1,3 +1,4 @@
+with Ada.Containers.Indefinite_Ordered_Maps;
 with Ada.Directories;
 
 with Alire.Settings.Builtins;
@@ -42,6 +43,18 @@ package body Alire.TOML_Index is
    --  pass this around as a regular argument in here, but it will require
    --  a non-trivial refactor. To keep in mind that **index loading cannot be
    --  parallelized.**
+
+   package Index_Version_Maps is new
+     Ada.Containers.Indefinite_Ordered_Maps
+       (Key_Type     => String,
+        Element_Type => Semantic_Versioning.Version,
+        "<"          => Standard."<",
+        "="          => Semantic_Versioning."=");
+
+   Checked_Index_Versions : Index_Version_Maps.Map;
+   --  Full index validation includes a git branch probe for the community
+   --  index. Remember successful checks so lazy per-crate loading only
+   --  restores the version needed to decode manifests.
 
    procedure Set_Error
      (Result            : out Load_Result;
@@ -182,12 +195,12 @@ package body Alire.TOML_Index is
          --  advice if it does not match.
 
          if Alire.Index.Valid_Versions.Contains (Loading_Index_Version)
-           and then Loading_Index_Version /= Alire.Index.Version
+           and then Loading_Index_Version < Alire.Index.Version
            and then Warn_Of_Old_Compatible
          then
             Put_Warning ("Index '" & TTY.Emph (Index.Name)
                          & "' version (" & Loading_Index_Version.Image
-                         & ") is older than the newest supported by alr ("
+                         & ") is older than the preferred version for alr ("
                          & Alire.Index.Version.Image & ")",
                          Disable_Setting =>
                            Settings.Builtins.Warning_Old_Index.Key);
@@ -197,11 +210,11 @@ package body Alire.TOML_Index is
 
             --  Index is either too old or too new
 
-            if Alire.Index.Version < Loading_Index_Version then
+            if Alire.Index.Max_Compatible_Version < Loading_Index_Version then
                Set_Error (Result, Filename,
                           "index version (" & Loading_Index_Version.Image
-                          & ") is newer than that expected by alr ("
-                          & Alire.Index.Version.Image & ")."
+                          & ") is newer than the newest supported by alr ("
+                          & Alire.Index.Max_Compatible_Version.Image & ")."
                           & " You may have to update alr");
             elsif Loading_Index_Version < Alire.Index.Min_Compatible_Version
             then
@@ -238,6 +251,12 @@ package body Alire.TOML_Index is
                          & Semantic_Versioning.Image (Alire.Index.Version));
             Trace.Debug ("But got index version: "
                          & Semantic_Versioning.Image (Loading_Index_Version));
+         end if;
+
+         if Result.Success then
+            Checked_Index_Versions.Include
+              (Key      => Root,
+               New_Item => Loading_Index_Version);
          end if;
       end if;
 
@@ -340,6 +359,16 @@ package body Alire.TOML_Index is
       Result.Assert;
 
       TOML_Index.Strict := Load.Strict;
+
+      --  Besides validating the index, initialize the metadata version used
+      --  while decoding releases. Avoid repeating the full check (including a
+      --  community-index git probe) for every crate loaded in this process.
+      if Checked_Index_Versions.Contains (Root) then
+         Loading_Index_Version := Checked_Index_Versions (Root);
+      else
+         Check_Index (Index, Root, Result);
+         Result.Assert;
+      end if;
 
       Trace.Debug ("Loading single crate " & Utils.TTY.Name (Crate)
                    & " from " & Crate_Root);
