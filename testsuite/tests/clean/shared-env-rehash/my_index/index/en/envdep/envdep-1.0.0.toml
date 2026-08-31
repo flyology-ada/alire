@@ -1,0 +1,18 @@
+name = "envdep"
+description = "Shared dependency with crate-relative environment variables"
+version = "1.0.0"
+licenses = "MIT"
+maintainers = ["example@example.com"]
+maintainers-logins = ["example"]
+project-files = ["envdep.gpr"]
+
+[environment]
+ENVDEP_INCLUDE.set = "${CRATE_ROOT}/include"
+ENVDEP_SHARE.set = "${CRATE_ROOT}/share"
+
+[[actions]]
+type = "pre-build"
+command = ["sh", "-c", "touch pre_build_ran"]
+
+[origin]
+url = "file:../../../crates/envdep"

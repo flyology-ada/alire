@@ -1279,4 +1279,3 @@ See the [GPR config](https://docs.adacore.com/gprbuild-docs/pdf/gprbuild_ug.pdf)
 definition in 2.9.1 and
 [Ada2022](https://www.adaic.org/resources/add_content/standards/22rm/html/RM-2-9.html)
 definition.
-
